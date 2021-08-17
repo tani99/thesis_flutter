@@ -130,37 +130,14 @@ class _MyHomePageState extends State<MyHomePage> {
                               "Enter text here",
                               textAlign: TextAlign.center,
                             ))),
-                    // IconButton(
-
-                    //   icon: Icon(LineIcons.bold),
-                    //   onPressed: () {
-                    //     print(summaryController.selection);
-                    //     var currentText = summaryController.text;
-                    //     var lowerIndex = summaryController.selection.baseOffset > summaryController.selection.extentOffset ? summaryController.selection.extentOffset: summaryController.selection.baseOffset;
-                    //     var higherIndex = summaryController.selection.baseOffset < summaryController.selection.extentOffset ? summaryController.selection.extentOffset: summaryController.selection.baseOffset;
-                    //     print(lowerIndex);
-                    //     print(higherIndex);
-                    //
-                    //     var firstHalf = currentText.substring(0, lowerIndex);
-                    //     var highlighted = currentText.substring(lowerIndex, higherIndex);
-                    //     var secondHalf = currentText.substring(higherIndex, currentText.length);
-                    //
-                    //     print(firstHalf);
-                    //     print(highlighted);
-                    //     print(secondHalf);
-                    //
-                    //     setState(() {
-                    //       currentMode == TextMode.bold ? currentMode = TextMode.normal:
-                    //       currentMode = TextMode.bold;
-                    //     });
-                    //     },
-                    // ),
-
                     Container(
+                      height:350,
                         margin: const EdgeInsets.only(
                             left: 10.0, right: 10.0, top: 10, bottom: 10),
                         color: Colors.white,
-                        child: TextFormField(
+                        child: Expanded (
+                          child:
+                        TextFormField(
                           controller: myController,
                           // minLines: 10,
                           keyboardType: TextInputType.multiline,
@@ -174,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             labelText: 'Text 1',
                             contentPadding: EdgeInsets.all(15.0),
                           ),
-                        )),
+                        ))),
                     Container(
                         width: MediaQuery.of(context).size.width / 3,
 
@@ -184,9 +161,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             : ElevatedButton(
                                 child: Text('Summarise'),
                                 onPressed: () async {
-                                  // setState(() {
-                                  //   isLoading=true;
-                                  // });
+                                  setState(() {
+                                    isLoading=true;
+                                  });
                                   var url = Uri.parse(
                                       'http://127.0.0.1:5000/summarise/' +
                                           myController.text
@@ -194,49 +171,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                               .replaceAll("\n", ""));
                                   var response = await getResponse(url);
                                   summaryController.text = response;
-                                  // setState(() {
-                                  //   isLoading = false;
-                                  // });
+                                  setState(() {
+                                    isLoading = false;
+                                  });
                                 },
-                                //     () async {
-                                //   print("loading");
-                                //   setState((){
-                                //     isLoading=true;
-                                //     summaryController.text = "Bull bull";
-                                //     print("setting state ??");
-                                //   });
-                                //   var url = Uri.parse('http://127.0.0.1:5000/summarise/' + myController.text);
-                                //   var response = await getResponse(url);
-                                //   print(response);
-                                //   print("1 ----------------- \n");
-                                //
-                                //   print("2 ----------------- \n");
-                                //   // getResponse(url).then((value)=> {
-                                //
-                                //   // // print("3 ----------------- \n" + value)
-                                //   // });
-                                //   setState(()
-                                //   {
-                                //     print("Done");
-                                //     isLoading=false;
-                                //     print(response);
-                                //     print(" ----------- here ----------- \n");
-                                //     _summary = response;
-                                //     summaryController.text = "THIS IS TEST TEXT";
-                                //     print(" ----------- state set ----------- \n");
-                                //   });
-                                //   summaryController.text = "THIS IS TEST TEXT";
-                                //   //   setState((){
-                                //   //   isLoading=false;
-                                //   //   })
-                                //   // });
-                                // },
                               )),
-                  ],
-                )),
-            Expanded(
-                flex: 3,
-                child: Column(
+
+             Container(
+                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Container(
@@ -250,8 +192,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               "Summary",
                               textAlign: TextAlign.center,
                             ))),
-                    Expanded(
-                        child: Container(
+                    Container(
+                      height:400,
                       color: Colors.white10,
                       child: Container(
                           margin: const EdgeInsets.only(
@@ -263,27 +205,11 @@ class _MyHomePageState extends State<MyHomePage> {
                             maxLines: null,
                             enableInteractiveSelection: true,
                           )
-
-                          // TextField(
-                          //   autofocus: true,
-                          //   maxLines: null,
-                          //   backgroundCursorColor: Colors.amber,
-                          //   cursorColor: Colors.green,
-                          //   style: TextStyle().merge(getStyle(currentMode)),
-                          //   focusNode:  FocusNode(),
-                          //   controller: summaryController,
-                          //   enableInteractiveSelection: true,
-                          //     showSelectionHandles: true,
-                          // )
-                          // SelectableText(_summary,
-                          // toolbarOptions: ToolbarOptions(copy:true, cut:true, paste:true, selectAll: true),)
                           ),
-                    )),
-                  ],
-                )),
-            Expanded(
-                flex: 3,
-                child: Column(
+                    )])),
+
+           Container(
+               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Container(
@@ -297,26 +223,22 @@ class _MyHomePageState extends State<MyHomePage> {
                               "Keywords",
                               textAlign: TextAlign.center,
                             ))),
-                    Expanded(
-                        child: Container(
+                    Container(
                       // margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  15, bottom: 10),
                       color: Colors.white,
                       child: Container(
                           margin: const EdgeInsets.only(
                               left: 10.0, right: 10.0, top: 10, bottom: 10),
                           child: Text("...")),
-                    )),
-                  ],
-                )),
-          ]))),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          summaryController.text = "My Stringt";
-        },
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    ));
+                    ),
+                  ])),
+
+          ])
+        )]
+    )
+    )
+    )
+    );
   }
 }
 
