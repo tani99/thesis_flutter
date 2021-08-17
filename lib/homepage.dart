@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'package:line_icons/line_icons.dart';
 import 'package:rich_editor/rich_editor.dart';
 
-
 enum TextMode {
   normal,
   bold,
@@ -24,11 +23,14 @@ const italicStyle = TextStyle(fontStyle: FontStyle.italic);
 
 // Helper method
 TextStyle getStyle(TextMode mode) {
-  switch(mode) {
-    case TextMode.bold: return boldStyle;
-    case TextMode.italic: return italicStyle;
+  switch (mode) {
+    case TextMode.bold:
+      return boldStyle;
+    case TextMode.italic:
+      return italicStyle;
     // case TextMode.underline: return underlineStyle;
-    default: return normalStyle;
+    default:
+      return normalStyle;
   }
 }
 
@@ -58,8 +60,6 @@ class _MyHomePageState extends State<MyHomePage> {
   var myController = TextEditingController();
   var summaryController = TextEditingController();
 
-
-
   final _textfieldFocusNode = FocusNode();
 
   @override
@@ -67,8 +67,9 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-  getSelectedText(controller){
-    print(controller.text.substring(controller.selection.baseOffset,controller.selection.extentOffset));
+  getSelectedText(controller) {
+    print(controller.text.substring(
+        controller.selection.baseOffset, controller.selection.extentOffset));
   }
 
   void handleMenu(String value) {
@@ -92,242 +93,230 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return SafeArea(
         child: Scaffold(
-          appBar: AppBar(
-            // Here we take the value from the MyHomePage object that was created by
-            // the App.build method, and use it to set our appbar title.
-            title: Text(widget.title),
-            actions: <Widget>[
-              PopupMenuButton<String>(
-                onSelected: handleMenu,
-                itemBuilder: (BuildContext context) {
-                  return {'Summarization', 'Tabulate'}.map((String choice) {
-                    return PopupMenuItem<String>(
-                      value: choice,
-                      child: Text(choice),
-                    );
-                  }).toList();
-                },
-              ),
-            ],
-          ),
-          body: Center(
-            // Center is a layout widget. It takes a single child and positions it
-            // in the middle of the parent.
-              child: Container(
-                  child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                                flex:2,
-                                child:Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    Container(
-                                        height: 35,
-                                        decoration: BoxDecoration(
-                                          color: Colors.blueAccent,
-                                        ),
-                                        child:
-                                        Padding(
-                                            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                                            child:Text(
-                                          "Enter text here",
-                                          textAlign: TextAlign.center,
-                                        ))
-                                    ),
-                                  IconButton(
-
-                                  icon: Icon(LineIcons.bold),
-                                  onPressed: () {
-                                    print(summaryController.selection);
-                                    var currentText = summaryController.text;
-                                    var lowerIndex = summaryController.selection.baseOffset > summaryController.selection.extentOffset ? summaryController.selection.extentOffset: summaryController.selection.baseOffset;
-                                    var higherIndex = summaryController.selection.baseOffset < summaryController.selection.extentOffset ? summaryController.selection.extentOffset: summaryController.selection.baseOffset;
-                                    print(lowerIndex);
-                                    print(higherIndex);
-
-                                    var firstHalf = currentText.substring(0, lowerIndex);
-                                    var highlighted = currentText.substring(lowerIndex, higherIndex);
-                                    var secondHalf = currentText.substring(higherIndex, currentText.length);
-
-                                    print(firstHalf);
-                                    print(highlighted);
-                                    print(secondHalf);
-
-                                    setState(() {
-                                      currentMode == TextMode.bold ? currentMode = TextMode.normal:
-                                      currentMode = TextMode.bold;
-                                    });
-                                    },
-                                ),
-
-                            Expanded(child:
-                                    Container(
-                                        color: Colors.white,
-                                        child:
-                                        TextFormField(
-                                          style: TextStyle().merge(getStyle(currentMode)),
-                                          controller: myController,
-                                          // minLines: 10,
-                                          keyboardType: TextInputType.multiline,
-                                          maxLines: null,
-                                          decoration: InputDecoration(
-                                            border: InputBorder.none,
-                                            labelText: 'Text',
-                                            contentPadding: EdgeInsets.all(15.0),
-                                          ),
-
-                                        )
-                                    )),
-                                    Container(
-                                        width: MediaQuery.of(context).size.width/3,
-
-                                        // margin: const EdgeInsets.only(left: 20.0, right: 20.0, top:  0, bottom: 20),
-                                        child:
-
-                                        isLoading ?  Center(child:CircularProgressIndicator()) :
-                                        ElevatedButton(
-                                          child: Text('Summarise'),
-                                          onPressed: () async {
-                                            // setState(() {
-                                            //   isLoading=true;
-                                            // });
-                                            var url = Uri.parse('http://127.0.0.1:5000/summarise/' + myController.text);
-                                            var response = await getResponse(url);
-                                            summaryController.text = response;
-                                            // setState(() {
-                                            //   isLoading = false;
-                                            // });
-                                            },
-                                          //     () async {
-                                          //   print("loading");
-                                          //   setState((){
-                                          //     isLoading=true;
-                                          //     summaryController.text = "Bull bull";
-                                          //     print("setting state ??");
-                                          //   });
-                                          //   var url = Uri.parse('http://127.0.0.1:5000/summarise/' + myController.text);
-                                          //   var response = await getResponse(url);
-                                          //   print(response);
-                                          //   print("1 ----------------- \n");
-                                          //
-                                          //   print("2 ----------------- \n");
-                                          //   // getResponse(url).then((value)=> {
-                                          //
-                                          //   // // print("3 ----------------- \n" + value)
-                                          //   // });
-                                          //   setState(()
-                                          //   {
-                                          //     print("Done");
-                                          //     isLoading=false;
-                                          //     print(response);
-                                          //     print(" ----------- here ----------- \n");
-                                          //     _summary = response;
-                                          //     summaryController.text = "THIS IS TEST TEXT";
-                                          //     print(" ----------- state set ----------- \n");
-                                          //   });
-                                          //   summaryController.text = "THIS IS TEST TEXT";
-                                          //   //   setState((){
-                                          //   //   isLoading=false;
-                                          //   //   })
-                                          //   // });
-                                          // },
-                                        )
-                                    ),
-                                  ],
-                                )),
-                            Expanded(
-                                flex:3,
-                                child:Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    Container(
-                                        height: 35,
-                                        decoration: BoxDecoration(
-                                          color: Colors.blueAccent,
-                                        ),
-                                        child:
-                                        Padding(
-                                            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                                            child:Text(
-                                              "Summary",
-                                              textAlign: TextAlign.center,
-                                            ))
-                                    ),
-                                    Expanded(child:Container(
-                                      color: Colors.white10,
-                                      child: Container(
-                                        margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  10, bottom: 10),
-                                          child:
-
-                                          CupertinoTextField(
-                                            controller: summaryController,
-                                            style: TextStyle().merge(getStyle(currentMode)),
-                                            keyboardType: TextInputType.multiline,
-                                            maxLines: null,
-                                              enableInteractiveSelection:true,
-                                          )
-
-
-                                          // TextField(
-                                          //   autofocus: true,
-                                          //   maxLines: null,
-                                          //   backgroundCursorColor: Colors.amber,
-                                          //   cursorColor: Colors.green,
-                                          //   style: TextStyle().merge(getStyle(currentMode)),
-                                          //   focusNode:  FocusNode(),
-                                          //   controller: summaryController,
-                                          //   enableInteractiveSelection: true,
-                                          //     showSelectionHandles: true,
-                                          // )
-                                        // SelectableText(_summary,
-                                        // toolbarOptions: ToolbarOptions(copy:true, cut:true, paste:true, selectAll: true),)
-                                      ),
-                                    )),
-                                  ],
-                                )),
-                            Expanded(
-                                flex:3,
-                                child:Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-
-                                  children: [
-                                    Container(
-                                        height: 35,
-                                        decoration: BoxDecoration(
-                                          color: Colors.blueAccent,
-                                        ),
-                                        child:
-                                        Padding(
-                                            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                                            child:Text(
-                                              "Keywords",
-                                              textAlign: TextAlign.center,
-                                            ))
-                                    ),
-
-                                    Expanded(child:Container(
-                                      // margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  15, bottom: 10),
-                                      color: Colors.white,
-                                      child: Container(margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  10, bottom: 10),
-                                          child:Text("...")),
-                                    )),
-
-                                  ],
-                                )),
-                          ]
-                      )
-              )
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              summaryController.text = "My Stringt";
+      appBar: AppBar(
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
+        actions: <Widget>[
+          PopupMenuButton<String>(
+            onSelected: handleMenu,
+            itemBuilder: (BuildContext context) {
+              return {'Summarization', 'Tabulate'}.map((String choice) {
+                return PopupMenuItem<String>(
+                  value: choice,
+                  child: Text(choice),
+                );
+              }).toList();
             },
-            tooltip: 'Increment',
-            child: Icon(Icons.add),
-          ), // This trailing comma makes auto-formatting nicer for build methods.
-        ));
+          ),
+        ],
+      ),
+      body: Center(
+          // Center is a layout widget. It takes a single child and positions it
+          // in the middle of the parent.
+          child: Column(
+                children: [
+                Expanded(
+                child: ListView(
+                children: [
+                    Container(
+                        height: 35,
+                        decoration: BoxDecoration(
+                          color: Colors.blueAccent,
+                        ),
+                        child: Padding(
+                            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                            child: Text(
+                              "Enter text here",
+                              textAlign: TextAlign.center,
+                            ))),
+                    // IconButton(
+
+                    //   icon: Icon(LineIcons.bold),
+                    //   onPressed: () {
+                    //     print(summaryController.selection);
+                    //     var currentText = summaryController.text;
+                    //     var lowerIndex = summaryController.selection.baseOffset > summaryController.selection.extentOffset ? summaryController.selection.extentOffset: summaryController.selection.baseOffset;
+                    //     var higherIndex = summaryController.selection.baseOffset < summaryController.selection.extentOffset ? summaryController.selection.extentOffset: summaryController.selection.baseOffset;
+                    //     print(lowerIndex);
+                    //     print(higherIndex);
+                    //
+                    //     var firstHalf = currentText.substring(0, lowerIndex);
+                    //     var highlighted = currentText.substring(lowerIndex, higherIndex);
+                    //     var secondHalf = currentText.substring(higherIndex, currentText.length);
+                    //
+                    //     print(firstHalf);
+                    //     print(highlighted);
+                    //     print(secondHalf);
+                    //
+                    //     setState(() {
+                    //       currentMode == TextMode.bold ? currentMode = TextMode.normal:
+                    //       currentMode = TextMode.bold;
+                    //     });
+                    //     },
+                    // ),
+
+                    Container(
+                        margin: const EdgeInsets.only(
+                            left: 10.0, right: 10.0, top: 10, bottom: 10),
+                        color: Colors.white,
+                        child: TextFormField(
+                          controller: myController,
+                          // minLines: 10,
+                          keyboardType: TextInputType.multiline,
+                          maxLines: null,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(width: 3, color: Colors.blue),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            labelText: 'Text 1',
+                            contentPadding: EdgeInsets.all(15.0),
+                          ),
+                        )),
+                    Container(
+                        width: MediaQuery.of(context).size.width / 3,
+
+                        // margin: const EdgeInsets.only(left: 20.0, right: 20.0, top:  0, bottom: 20),
+                        child: isLoading
+                            ? Center(child: CircularProgressIndicator())
+                            : ElevatedButton(
+                                child: Text('Summarise'),
+                                onPressed: () async {
+                                  // setState(() {
+                                  //   isLoading=true;
+                                  // });
+                                  var url = Uri.parse(
+                                      'http://127.0.0.1:5000/summarise/' +
+                                          myController.text
+                                              .replaceAll("\/", "%20or%20")
+                                              .replaceAll("\n", ""));
+                                  var response = await getResponse(url);
+                                  summaryController.text = response;
+                                  // setState(() {
+                                  //   isLoading = false;
+                                  // });
+                                },
+                                //     () async {
+                                //   print("loading");
+                                //   setState((){
+                                //     isLoading=true;
+                                //     summaryController.text = "Bull bull";
+                                //     print("setting state ??");
+                                //   });
+                                //   var url = Uri.parse('http://127.0.0.1:5000/summarise/' + myController.text);
+                                //   var response = await getResponse(url);
+                                //   print(response);
+                                //   print("1 ----------------- \n");
+                                //
+                                //   print("2 ----------------- \n");
+                                //   // getResponse(url).then((value)=> {
+                                //
+                                //   // // print("3 ----------------- \n" + value)
+                                //   // });
+                                //   setState(()
+                                //   {
+                                //     print("Done");
+                                //     isLoading=false;
+                                //     print(response);
+                                //     print(" ----------- here ----------- \n");
+                                //     _summary = response;
+                                //     summaryController.text = "THIS IS TEST TEXT";
+                                //     print(" ----------- state set ----------- \n");
+                                //   });
+                                //   summaryController.text = "THIS IS TEST TEXT";
+                                //   //   setState((){
+                                //   //   isLoading=false;
+                                //   //   })
+                                //   // });
+                                // },
+                              )),
+                  ],
+                )),
+            Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                        height: 35,
+                        decoration: BoxDecoration(
+                          color: Colors.blueAccent,
+                        ),
+                        child: Padding(
+                            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                            child: Text(
+                              "Summary",
+                              textAlign: TextAlign.center,
+                            ))),
+                    Expanded(
+                        child: Container(
+                      color: Colors.white10,
+                      child: Container(
+                          margin: const EdgeInsets.only(
+                              left: 10.0, right: 10.0, top: 10, bottom: 10),
+                          child: CupertinoTextField(
+                            controller: summaryController,
+                            style: TextStyle().merge(getStyle(currentMode)),
+                            keyboardType: TextInputType.multiline,
+                            maxLines: null,
+                            enableInteractiveSelection: true,
+                          )
+
+                          // TextField(
+                          //   autofocus: true,
+                          //   maxLines: null,
+                          //   backgroundCursorColor: Colors.amber,
+                          //   cursorColor: Colors.green,
+                          //   style: TextStyle().merge(getStyle(currentMode)),
+                          //   focusNode:  FocusNode(),
+                          //   controller: summaryController,
+                          //   enableInteractiveSelection: true,
+                          //     showSelectionHandles: true,
+                          // )
+                          // SelectableText(_summary,
+                          // toolbarOptions: ToolbarOptions(copy:true, cut:true, paste:true, selectAll: true),)
+                          ),
+                    )),
+                  ],
+                )),
+            Expanded(
+                flex: 3,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                        height: 35,
+                        decoration: BoxDecoration(
+                          color: Colors.blueAccent,
+                        ),
+                        child: Padding(
+                            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                            child: Text(
+                              "Keywords",
+                              textAlign: TextAlign.center,
+                            ))),
+                    Expanded(
+                        child: Container(
+                      // margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  15, bottom: 10),
+                      color: Colors.white,
+                      child: Container(
+                          margin: const EdgeInsets.only(
+                              left: 10.0, right: 10.0, top: 10, bottom: 10),
+                          child: Text("...")),
+                    )),
+                  ],
+                )),
+          ]))),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          summaryController.text = "My Stringt";
+        },
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    ));
   }
 }
 
@@ -446,3 +435,31 @@ class _MyHomePageState extends State<MyHomePage> {
 //     return new TextSpan(style: widget.style, text: text);
 //   }
 // }
+
+class Bullet extends Text {
+  const Bullet(
+    String data, {
+    Key? key,
+    TextStyle? style,
+    TextAlign? textAlign,
+    TextDirection? textDirection,
+    Locale? locale,
+    bool? softWrap,
+    TextOverflow? overflow,
+    double? textScaleFactor,
+    int? maxLines,
+    String? semanticsLabel,
+  }) : super(
+          '• $data',
+          key: key,
+          style: style,
+          textAlign: textAlign,
+          textDirection: textDirection,
+          locale: locale,
+          softWrap: softWrap,
+          overflow: overflow,
+          textScaleFactor: textScaleFactor,
+          maxLines: maxLines,
+          semanticsLabel: semanticsLabel,
+        );
+}
