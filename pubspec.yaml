@@ -34,9 +34,12 @@ dependencies:
   provider: ^5.0.0
   community_material_icon: ^5.9.55
   keyboard_visibility: ^0.5.6
-  rich_editor: ^0.0.4
   editable: ^2.0.0
-  html_editor_enhanced: ^2.2.0+1-dev.1
+  rich_editor: ^0.0.5
+  flutter_markdown: ^0.6.4
+  file_picker: ^4.0.0
+  path_provider: ^2.0.2
+  tuple: ^2.0.0
 
 dev_dependencies:
   flutter_test:

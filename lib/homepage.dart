@@ -3,10 +3,17 @@ import 'dart:convert' as convert;
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_project/request.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:line_icons/line_icons.dart';
 import 'package:rich_editor/rich_editor.dart';
+import 'package:markdown/markdown.dart' as md;
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 
 enum TextMode {
   normal,
@@ -59,8 +66,14 @@ class _MyHomePageState extends State<MyHomePage> {
   var currentMode = TextMode.normal;
   var myController = TextEditingController();
   var summaryController = TextEditingController();
-
+  // quill.QuillController
+  // QuillController _controller = QuillController.basic();
+  // QuillController quillController = QuillController.basic();
+  // var controller = markdown
+  var _focusNode = FocusNode();
   final _textfieldFocusNode = FocusNode();
+  // String? html = await keyEditor.currentState?.getHtml();
+  // print(html);
 
   @override
   void initState() {
@@ -112,130 +125,182 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       body: Center(
+        child:Container(
+            child: // Insert widget into tree
+            RichEditor(
+              // key: keyEditor,
+              value: 'initial html here',
+              editorOptions: RichEditorOptions(
+                placeholder: 'Start typing',
+                // backgroundColor: Colors.blueGrey, // Editor's bg color
+                // baseTextColor: Colors.white,
+                // editor padding
+                padding: EdgeInsets.symmetric(horizontal: 5.0),
+                // font name
+                baseFontFamily: 'sans-serif',
+                // Position of the editing bar (BarPosition.TOP or BarPosition.BOTTOM)
+                barPosition: BarPosition.TOP,
+              ),
+              // You can return a Link (maybe you need to upload the image to your
+              // storage before displaying in the editor or you can also use base64
+              getImageUrl: (image) {
+                String link = 'https://avatars.githubusercontent.com/u/24323581?v=4';
+                String base64 = base64Encode(image.readAsBytesSync());
+                String base64String = 'data:image/png;base64, $base64';
+                return base64String;
+              },
+            )
+        ),
           // Center is a layout widget. It takes a single child and positions it
           // in the middle of the parent.
-          child: Column(
-                children: [
-                Expanded(
-                child: ListView(
-                children: [
-                    Container(
-                        height: 35,
-                        decoration: BoxDecoration(
-                          color: Colors.blueAccent,
-                        ),
-                        child: Padding(
-                            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                            child: Text(
-                              "Enter text here",
-                              textAlign: TextAlign.center,
-                            ))),
-                    Container(
-                      height:350,
-                        margin: const EdgeInsets.only(
-                            left: 10.0, right: 10.0, top: 10, bottom: 10),
-                        color: Colors.white,
-                        child: Expanded (
-                          child:
-                        TextFormField(
-                          controller: myController,
-                          // minLines: 10,
-                          keyboardType: TextInputType.multiline,
-                          maxLines: null,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(width: 3, color: Colors.blue),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            labelText: 'Text 1',
-                            contentPadding: EdgeInsets.all(15.0),
-                          ),
-                        ))),
-                    Container(
-                        width: MediaQuery.of(context).size.width / 3,
-
-                        // margin: const EdgeInsets.only(left: 20.0, right: 20.0, top:  0, bottom: 20),
-                        child: isLoading
-                            ? Center(child: CircularProgressIndicator())
-                            : ElevatedButton(
-                                child: Text('Summarise'),
-                                onPressed: () async {
-                                  setState(() {
-                                    isLoading=true;
-                                  });
-                                  var url = Uri.parse(
-                                      'http://127.0.0.1:5000/summarise/' +
-                                          myController.text
-                                              .replaceAll("\/", "%20or%20")
-                                              .replaceAll("\n", ""));
-                                  var response = await getResponse(url);
-                                  summaryController.text = response;
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                },
-                              )),
-
-             Container(
-                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                        height: 35,
-                        decoration: BoxDecoration(
-                          color: Colors.blueAccent,
-                        ),
-                        child: Padding(
-                            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                            child: Text(
-                              "Summary",
-                              textAlign: TextAlign.center,
-                            ))),
-                    Container(
-                      height:400,
-                      color: Colors.white10,
-                      child: Container(
-                          margin: const EdgeInsets.only(
-                              left: 10.0, right: 10.0, top: 10, bottom: 10),
-                          child: CupertinoTextField(
-                            controller: summaryController,
-                            style: TextStyle().merge(getStyle(currentMode)),
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            enableInteractiveSelection: true,
-                          )
-                          ),
-                    )])),
-
-           Container(
-               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                        height: 35,
-                        decoration: BoxDecoration(
-                          color: Colors.blueAccent,
-                        ),
-                        child: Padding(
-                            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                            child: Text(
-                              "Keywords",
-                              textAlign: TextAlign.center,
-                            ))),
-                    Container(
-                      // margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  15, bottom: 10),
-                      color: Colors.white,
-                      child: Container(
-                          margin: const EdgeInsets.only(
-                              left: 10.0, right: 10.0, top: 10, bottom: 10),
-                          child: Text("...")),
-                    ),
-                  ])),
-
-          ])
-        )]
-    )
+    //       child: Column(
+    //             mainAxisSize: MainAxisSize.min,
+    //             children: [
+    //             Flexible(
+    //             child: ListView(
+    //             children: [
+    //                 Container(
+    //                     height: 35,
+    //                     decoration: BoxDecoration(
+    //                       color: Colors.blueAccent,
+    //                     ),
+    //                     child: Padding(
+    //                         padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+    //                         child: Text(
+    //                           "Enter text here",
+    //                           textAlign: TextAlign.center,
+    //                         ))),
+    //                 Container(
+    //                   height:350,
+    //                     margin: const EdgeInsets.only(
+    //                         left: 10.0, right: 10.0, top: 10, bottom: 10),
+    //                     color: Colors.white,
+    //                     child: TextFormField(
+    //                       controller: myController,
+    //                       // minLines: 10,
+    //                       keyboardType: TextInputType.multiline,
+    //                       maxLines: null,
+    //                       decoration: InputDecoration(
+    //                         border: OutlineInputBorder(
+    //                           borderSide:
+    //                               BorderSide(width: 3, color: Colors.blue),
+    //                           borderRadius: BorderRadius.circular(15),
+    //                         ),
+    //                         labelText: 'Text 1',
+    //                         contentPadding: EdgeInsets.all(15.0),
+    //                       ),
+    //                     )),
+    //                 Container(
+    //                     width: MediaQuery.of(context).size.width / 3,
+    //
+    //                     // margin: const EdgeInsets.only(left: 20.0, right: 20.0, top:  0, bottom: 20),
+    //                     child: isLoading
+    //                         ? Center(child: CircularProgressIndicator())
+    //                         : ElevatedButton(
+    //                             child: Text('Summarise'),
+    //                             onPressed: () async {
+    //                               setState(() {
+    //                                 isLoading=true;
+    //                               });
+    //                               var url = Uri.parse(
+    //                                   'http://127.0.0.1:5000/summarise/' +
+    //                                       myController.text
+    //                                           .replaceAll("\/", "%20or%20")
+    //                                           .replaceAll("\n", ""));
+    //                               var response = await getResponse(url);
+    //                               summaryController.text = response;
+    //                               setState(() {
+    //                                 isLoading = false;
+    //                               });
+    //                             },
+    //                           )),
+    //       //
+    //
+    //
+    //          Container(
+    //              child: Column(
+    //               crossAxisAlignment: CrossAxisAlignment.stretch,
+    //               children: [
+    //                 Container(
+    //                     height: 35,
+    //                     decoration: BoxDecoration(
+    //                       color: Colors.blueAccent,
+    //                     ),
+    //                     child: Padding(
+    //                         padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+    //                         child: Text(
+    //                           "Summary",
+    //                           textAlign: TextAlign.center,
+    //                         ))),
+    //                 Container(
+    //                   height:400,
+    //                   color: Colors.white10,
+    //                   child: Container(
+    //                       margin: const EdgeInsets.only(
+    //                           left: 10.0, right: 10.0, top: 10, bottom: 10),
+    //                       child: CupertinoTextField(
+    //                         controller: summaryController,
+    //                         style: TextStyle().merge(getStyle(currentMode)),
+    //                         keyboardType: TextInputType.multiline,
+    //                         maxLines: null,
+    //                         enableInteractiveSelection: true,
+    //                       )
+    //                       ),
+    //                 )])),
+    //
+    //        Container(
+    //          child: // Insert widget into tree
+    //          RichEditor(
+    //            // key: keyEditor,
+    //            value: 'initial html here',
+    //            editorOptions: RichEditorOptions(
+    //              placeholder: 'Start typing',
+    //              // backgroundColor: Colors.blueGrey, // Editor's bg color
+    //              // baseTextColor: Colors.white,
+    //              // editor padding
+    //              padding: EdgeInsets.symmetric(horizontal: 5.0),
+    //              // font name
+    //              baseFontFamily: 'sans-serif',
+    //              // Position of the editing bar (BarPosition.TOP or BarPosition.BOTTOM)
+    //              barPosition: BarPosition.TOP,
+    //            ),
+    //            // You can return a Link (maybe you need to upload the image to your
+    //            // storage before displaying in the editor or you can also use base64
+    //            getImageUrl: (image) {
+    //              String link = 'https://avatars.githubusercontent.com/u/24323581?v=4';
+    //              String base64 = base64Encode(image.readAsBytesSync());
+    //              String base64String = 'data:image/png;base64, $base64';
+    //              return base64String;
+    //            },
+    //          )
+    //        ),
+    //        Container(
+    //            child: Column(
+    //               crossAxisAlignment: CrossAxisAlignment.stretch,
+    //               children: [
+    //                 Container(
+    //                     height: 35,
+    //                     decoration: BoxDecoration(
+    //                       color: Colors.blueAccent,
+    //                     ),
+    //                     child: Padding(
+    //                         padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+    //                         child: Text(
+    //                           "Keywords",
+    //                           textAlign: TextAlign.center,
+    //                         ))),
+    //                 Container(
+    //                   // margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  15, bottom: 10),
+    //                   color: Colors.white,
+    //                   child: Container(
+    //                       margin: const EdgeInsets.only(
+    //                           left: 10.0, right: 10.0, top: 10, bottom: 10),
+    //                       child: Text("...")),
+    //                 ),
+    //               ])),
+    //       ])
+    //     )]
+    // )
     )
     )
     );
