@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:convert' as convert;
 import 'dart:io';
 import 'package:editable/editable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_project/request.dart';
+import 'package:flutter_project/toggle_buttons_set.dart';
 import 'package:http/http.dart' as http;
 import 'package:json_table/json_table.dart';
 import 'dart:convert' show utf8;
@@ -33,7 +35,11 @@ class TablesPage extends StatefulWidget {
 class _TablesPageState extends State<TablesPage> {
   int _counter = 0;
   var _table_data;
+  var isEditting = false;
   var isLoading = false;
+  var toggleButtonSet =  ToggleButtonsSet();
+  var _json_data = {};
+  var tableControllers = [];
   @override
   void initState() {
     super.initState();
@@ -46,38 +52,6 @@ class _TablesPageState extends State<TablesPage> {
       result.add(Text(obj["Text2"][i]));
     }
     return result;
-  }
-
-  Future<void> _incrementCounter() async {
-
-    // var url = Uri.parse('https://summarisation-api-project.azurewebsites.net/');
-    // var url = Uri.parse('http://127.0.0.1:5000/hello');
-    var url = Uri.parse('http://127.0.0.1:5000/summarise/yoyo');
-    // Await the http get response, then decode the json-formatted response.
-    // var response = await getData(url);
-    // if (response.statusCode == 200) {
-    //   var jsonResponse =
-    //   convert.jsonDecode(response.body) as Map<String, dynamic>;
-    //   var query = jsonResponse['query'];
-    //   print('Query: $query.');
-    // } else {
-    //   print('Request failed with status: ${response.statusCode}.');
-    // }
-
-    var  result;
-    var responseString = await getResponse(url); //.then((value) => value);
-    print("Response string");
-    print(responseString.runtimeType);
-    // print(value);
-
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
   }
 
   List buildCols(){
@@ -97,9 +71,110 @@ class _TablesPageState extends State<TablesPage> {
     return rows;
   }
 
+  Widget table(json) {
+    tableControllers = [];
+    return Container(
+        margin: const EdgeInsets.only(left: 20.0, right: 20.0, top:  10, bottom: 10),
+      child: DataTable(
+        columns: const <DataColumn>[
+          DataColumn(
+            label: Text(
+              'Id',
+              style: TextStyle(fontStyle: FontStyle.italic),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Text 1',
+              style: TextStyle(fontStyle: FontStyle.italic),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Text 2',
+              style: TextStyle(fontStyle: FontStyle.italic),
+            ),
+          ),
+        ],
+        rows:  data(json),
+      )
+    );
+  }
+
+  List<DataRow> data(json) {
+    return [for (final k in json.keys)
+        row(k, json[k]["Text1"], json[k]["Text2"])
+        ];
+
+  }
+
+  DataRow row(id, text1, text2){
+    var idController = TextEditingController();
+    var text1Controller = TextEditingController();
+    var text2Controller = TextEditingController();
+
+    print("test");
+    print(id);
+    print(text1);
+    print(text2);
+    idController.text = id.toString();
+    text1Controller.text = text1;
+    text2Controller.text = text2;
+
+    setState(() {
+      tableControllers.add([idController, text1Controller, text2Controller]);
+    });
+
+    return DataRow(
+      cells: <DataCell>[
+        DataCell(Container(
+            // margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  20, bottom: 20),
+    width: 40,child:
+        isEditting ?
+        CupertinoTextField(
+          controller: idController,
+          style: TextStyle(),
+          keyboardType: TextInputType.multiline,
+          maxLines: null,
+          enableInteractiveSelection: true,
+        ) :Text(idController.text)
+        )),
+        DataCell(Container(
+            // margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  20, bottom: 20),
+    width: 450,child:
+        isEditting ?
+        CupertinoTextField(
+          controller: text1Controller,
+          style: TextStyle(),
+          keyboardType: TextInputType.multiline,
+          maxLines: null,
+          enableInteractiveSelection: true,
+        ) :Text(text1Controller.text)
+        )),
+        DataCell(Container(
+            // margin: const EdgeInsets.only(left: 0.0, right: 10.0, top:  0, bottom: 0),
+    width: 450,child:
+        isEditting ?
+        CupertinoTextField(
+          controller: text2Controller,
+          style: TextStyle(),
+          keyboardType: TextInputType.multiline,
+          maxLines: null,
+          enableInteractiveSelection: true,
+        ) :Text(text2Controller.text)
+        )),
+      ],
+    );
+  }
   Widget buildEditable(json){
+    // return Text(json["0"]["Text1"]);
+    return table(json);
+    print("builds editable again");
+
     List rows = buildRows(json);
     List cols = buildCols();
+
+    print(rows);
     // List rows = buildRows(json);
     // List cols = buildCols();
     return
@@ -109,89 +184,108 @@ class _TablesPageState extends State<TablesPage> {
         child:Editable(
       columns: cols,
       rows: rows,
-      zebraStripe: true,
-      stripeColor1: Colors.white70,
-      stripeColor2: Colors.grey,
-      onRowSaved: (value) {
-        print(value);
-      },
-      onSubmitted: (value) {
-        print(value);
-      },
-      borderColor: Colors.blueGrey,
-      tdStyle: TextStyle(fontWeight: FontWeight.bold),
-      trHeight: 200,
-      thStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-      thAlignment: TextAlign.center,
-      thVertAlignment: CrossAxisAlignment.end,
-      thPaddingBottom: 3,
-      showSaveIcon: true,
-      saveIconColor: Colors.black,
-      showCreateButton: true,
-      tdAlignment: TextAlign.left,
-      tdEditableMaxLines: 100, // don't limit and allow data to wrap
-      tdPaddingTop: 20,
-      tdPaddingBottom: 0,
-      tdPaddingLeft: 10,
-      tdPaddingRight: 8,
-      focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.blue),
-          borderRadius: BorderRadius.all(Radius.circular(0))),
+      // zebraStripe: true,
+      // stripeColor1: Colors.white70,
+      // stripeColor2: Colors.grey,
+      // onRowSaved: (value) {
+      //   print(value);
+      // },
+      // onSubmitted: (value) {
+      //   print(value);
+      // },
+      // borderColor: Colors.blueGrey,
+      // tdStyle: TextStyle(fontWeight: FontWeight.bold),
+      // trHeight: 200,
+      // thStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+      // thAlignment: TextAlign.center,
+      // thVertAlignment: CrossAxisAlignment.end,
+      // thPaddingBottom: 3,
+      // showSaveIcon: true,
+      // saveIconColor: Colors.black,
+      // showCreateButton: true,
+      // tdAlignment: TextAlign.left,
+      // tdEditableMaxLines: 100, // don't limit and allow data to wrap
+      // tdPaddingTop: 20,
+      // tdPaddingBottom: 0,
+      // tdPaddingLeft: 10,
+      // tdPaddingRight: 8,
+      // focusedBorder: OutlineInputBorder(
+      //     borderSide: BorderSide(color: Colors.blue),
+      //     borderRadius: BorderRadius.all(Radius.circular(0))),
     ));
   }
-  Widget buildTable(json){
-    return Container(
-        margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  10, bottom: 10),
-        child:
 
-    Table(
-        border: TableBorder.all(),
-        columnWidths: {
-          0: FlexColumnWidth(1),// fixed to 100 width
-          1: FlexColumnWidth(15),
-          2: FlexColumnWidth(15),//fixed to 100 width
-        },
-        children: [
-          TableRow(
-            // mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-                Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                  child: Flexible(child:Text("Id",
-                            textAlign: TextAlign.left)),
-                          ),
-                Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                child: Flexible(child:Text("Text 1",
-                              textAlign: TextAlign.left))),
-                Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                child: Flexible(child:Text("Text 2",
-                              textAlign: TextAlign.left)))
-            ],
-          ),
-            for (final k in json.keys)
-              TableRow(
-                // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                      child: Flexible(child: Text(k.toString()))),
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                      child: Flexible(child:Text(json[k]["Text1"]))),
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                      child: Flexible(child:Text(json[k]["Text2"]))),
-                ]
-              ),
-                // )
-            ])
-    );
+  //
+  // Widget buildTable(json){
+  //   return Container(
+  //       margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  10, bottom: 10),
+  //       child:
+  //
+  //   Table(
+  //       border: TableBorder.all(),
+  //       columnWidths: {
+  //         0: FlexColumnWidth(1),// fixed to 100 width
+  //         1: FlexColumnWidth(15),
+  //         2: FlexColumnWidth(15),//fixed to 100 width
+  //       },
+  //       children: [
+  //         TableRow(
+  //           decoration: const BoxDecoration(
+  //             color: Colors.blue,
+  //           ),
+  //           // mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //           children: [
+  //               Padding(
+  //               padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+  //                 child: Flexible(child:Text("Id",
+  //                           textAlign: TextAlign.left)),
+  //                         ),
+  //               Padding(
+  //               padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+  //               child: Flexible(child:Text("Text 1",
+  //                             textAlign: TextAlign.left))),
+  //               Padding(
+  //               padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+  //               child: Flexible(child:Text("Text 2",
+  //                             textAlign: TextAlign.left)))
+  //           ],
+  //         ),
+  //           for (final k in json.keys)
+  //             TableRow(
+  //               // mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //               children: [
+  //                   Padding(
+  //                     padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+  //                     child: Flexible(child: Text(k.toString()))),
+  //                   Padding(
+  //                     padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+  //                     child: Flexible(child:Text(json[k]["Text1"]))),
+  //                   Padding(
+  //                     padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+  //                     child: Flexible(child:Text(json[k]["Text2"]))),
+  //               ]
+  //             ),
+  //               // )
+  //           ])
+  //   );
+  // }
+  //
+  jsonFromControllers(){
+    var json = {};
+    var i = 0;
+    for (var pair in tableControllers) {
+      print("got a triplet");
+      json[i] = {"Id": pair[0].text, "Text1": pair[1].text, "Text2": pair[2].text};
+      i += 1;
+    }
+    return json;
   }
+
   void tabulate(json) {
     setState(() {
       _table_data = buildEditable(json);
+      print("has the table data been updated? ");
+      print(_table_data);
           // buildTable(json);
     });
 
@@ -232,9 +326,15 @@ class _TablesPageState extends State<TablesPage> {
                         children: [
                           Container(
                             child:
-                          Column(
+                          Row(
+                          children: [
+                          toggleButtonSet,
+                    Expanded(
+                        child:Column(
                                 children: [
                                   Container(
+                                      margin: const EdgeInsets.only(
+                                          left: 20.0, right: 20.0, top: 20, bottom: 10),
                                       height: 35,
                                       decoration: BoxDecoration(
                                         color: Colors.blueAccent,
@@ -248,7 +348,7 @@ class _TablesPageState extends State<TablesPage> {
 
                                   Container(
                                       margin: const EdgeInsets.only(
-                                          left: 10.0, right: 10.0, top: 10, bottom: 10),
+                                          left: 20.0, right: 20.0, top: 20, bottom: 20),
                                       color: Colors.white,
                                       child:
                                       TextFormField(
@@ -269,39 +369,40 @@ class _TablesPageState extends State<TablesPage> {
                                   ),
                                 ],
                               )),
-                          Container(
-                            child:Column(
-                              children: [
-                                Container(
-                                    margin: const EdgeInsets.only(
-                                        left: 10.0, right: 10.0, top: 10, bottom: 10),
-                                    height: 35,
-                                    decoration: BoxDecoration(
-                                      color: Colors.blueAccent,
+                    Expanded(child: Column(
+                                  children: [
+                                    Container(
+                                        margin: const EdgeInsets.only(
+                                            left: 20.0, right: 20.0, top: 20, bottom: 10),
+                                        height: 35,
+                                        decoration: BoxDecoration(
+                                          color: Colors.blueAccent,
+                                        ),
+                                        child: Center(
+                                            child: Text(
+                                              "Text 2",
+                                              textAlign: TextAlign.center,
+                                            ))
                                     ),
-                                    child: Center(
-                                        child: Text(
-                                          "Text 2",
-                                          textAlign: TextAlign.center,
-                                        ))
-                                ),
 
                                     Container(
-                                        margin: const EdgeInsets.only(left: 10.0,
-                                            right: 10.0,
-                                            top: 10,
-                                            bottom: 10),
-                                        color: Colors.white,
+                                        margin: const EdgeInsets.only(left: 20.0,
+                                            right: 20.0,
+                                            top: 20,
+                                            bottom: 20),
+                                        // color: Colors.white,
                                         child:
                                         TextFormField(
-                                          controller: text1controller,
+                                          controller: text2controller,
                                           // minLines: 10,
                                           keyboardType: TextInputType.multiline,
                                           maxLines: null,
                                           decoration: InputDecoration(
                                             border: OutlineInputBorder(
                                               borderSide: BorderSide(
-                                                  width: 3, color: Colors.blue),
+                                                width: 3,
+                                                // color: Colors.blue
+                                              ),
                                               borderRadius: BorderRadius.circular(15),
                                             ),
                                             labelText: 'Text 2',
@@ -311,14 +412,17 @@ class _TablesPageState extends State<TablesPage> {
                                         )
                                     ),
 
-                              ],
-                            )
+                                  ],
+                                ))
+
+                          ])
                           ),
+
                           Center(
                               child:
                               Container(
                                 margin: const EdgeInsets.only(
-                                    left: 10.0, right: 10.0, top: 10, bottom: 10),
+                                    left: 20.0, right: 20.0, top: 10, bottom: 20),
 
                                 child:
                                 TextFormField(
@@ -329,7 +433,9 @@ class _TablesPageState extends State<TablesPage> {
                                   decoration: InputDecoration(
                                     border: OutlineInputBorder(
                                       borderSide: BorderSide(
-                                          width: 3, color: Colors.blue),
+                                          width: 3,
+                                          // color: Colors.blue
+                                      ),
                                       borderRadius: BorderRadius.circular(15),
                                     ),
                                     labelText: 'Number of segments',
@@ -337,73 +443,50 @@ class _TablesPageState extends State<TablesPage> {
                                   ),
                                 ),
                               )),
-                          Center(
-                              child:
+
                               Container(
                                   margin: const EdgeInsets.only(
-                                      left: 10.0, right: 10.0, top: 15, bottom: 10),
+                                      left: 20.0, right: 20.0, top: 10, bottom: 20),
 
-                                  child:
-                                  isLoading
+                                  // margin: const EdgeInsets.only(left: 20.0, right: 20.0, top:  0, bottom: 20),
+                                  child: isLoading
                                       ? Center(child: CircularProgressIndicator())
-                                      :
-                                  ElevatedButton(
-                                    child: Text('Tabulate'),
+                                      : ElevatedButton(
+                                    child: Text('Generate'),
                                     onPressed: () async {
-                                      print("loading");
                                       setState(() {
-                                        isLoading = true;
+                                        isLoading=true;
                                       });
+
                                       var url = Uri.parse(
                                           'http://127.0.0.1:5000/tabulate/' +
-                                              text1controller.text.replaceAll(
-                                                  "\/", "%20or%20").replaceAll("\n",
-                                                  "") + "/" + text2controller.text
-                                              .replaceAll("\/", "%20or%20").replaceAll(
-                                              "\n", "") + "/" + numcontroller.text);
+                                              text1controller.text
+                                                  .replaceAll("\/", "%20or%20")
+                                                  .replaceAll("\n", "").replaceAll("\'", "'") + '/' + text2controller.text
+                                              .replaceAll("\/", "%20or%20")
+                                              .replaceAll("\n", "").replaceAll("\'", "'") + '/' + toggleButtonSet.state.currentRangeValue.toString() + '/' + toggleButtonSet.state.sum_bool[0].toString() + '/' + toggleButtonSet.state.simp_bool[0].toString()+ '/' + toggleButtonSet.state.stucture_bool[0].toString() + '/' + toggleButtonSet.state.include_bool[0].toString() + "/" + numcontroller.text);
                                       var jsonResponse = await getResponseJson(url);
                                       // var jsonResponse = {0: {"Text1": "The Lok Sabha is elected for a term of five years. Its life can be extended for one year at a time during a national emergency.", "Text2": "Term The Rajya Sabha is a permanent House. It cannot be dissolved. When the Lok Sabha is not in session or is dissolved, the permanent house still functions. However, each member of the Rajya Sabha enjoys a six-year tcrm. Every two years one-third of its members retire by rotation. The total strength of the Rajya Sabha cannot be more than 250 of which 238 are elected while 12 arc nominated by the President of India. Election to the Rajya Sabha is done indirectly. The members of the state legislature elect the state representatives to the Rajya Sabha in accordance with the system of proportional representation by means of a single transferable vote. The seats in the Rajya Sabha for each state and Union Territory arc fixed on the basis of its population."}, 1: {"Text1": "It can be dissolved earlier than its term by the President on the advice of the Prime Minister. It can be voted out of power by a debate and vote on a no-confidence motion. During the 13\" Lok Sabha, Bhartiya Janata Party lost a no~confidence motion by one vote and had to resign.  The House may have not more than 552 members; 530 elected from the states, 20 from Union Territories and not more than 2 members nominated from the Anglo-Indian Community. At present, the strength of the Lok Sabha is 545.  Election to the Lok Sabha is by universal adult franchise.", "Text2": "A constituency is an area demarcated for the purpose of election. In other words, it is an area or locality with a certain number of people who choose a person to represent them in the Lok Sabha.}, 2: {Text1: Every Indian citizen above the age; of 18 can vote for his or her representative in the Lok Sabha. The election is direct but by secret ballot, so that nobody is threatened or coerced into voting for a particular party or an individual.", "Text2": "The division is not based on area but on population. Let us consider Mizoram, Rajasthan and Uttar Pradesh."}};
                                       tabulate(jsonResponse);
-                                      // tabulate();
-
-                                      setState(() {
-                                        isLoading = false;
+                                      this.setState(() {
+                                        _table_data = buildEditable(jsonResponse);
+                                        print("table updated with new data");
+                                        print(_table_data);
+                                        this.isLoading = false;
                                       });
-
-                                      /////////////
-                                      // setState(()
-                                      // {
-                                      //   print("Done");
-                                      //   isLoading=false;
-                                      //   print(jsonResponse);
-                                      //   print(jsonResponse.runtimeType);
-                                      //   _table_data = jsonResponse;
-                                      // });
                                     },
-                                  )
-                              )),
+                                  )),
                           Container(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
 
                                 children: [
-                                  Container(
-                                      height: 35,
-                                      decoration: BoxDecoration(
-                                        color: Colors.blueAccent,
-                                      ),
-                                      child: Center(
-                                          child: Text(
-                                            "Table",
-                                            textAlign: TextAlign.center,
-                                          ))
-                                  ),
 
                                   Container(
                                     // height:100,
                                         margin: const EdgeInsets.only(left: 10.0,
                                             right: 10.0,
-                                            top: 10,
+                                            top: 0,
                                             bottom: 10),
                                         color: Colors.white,
                                         child: (_table_data != null) ?
@@ -416,18 +499,21 @@ class _TablesPageState extends State<TablesPage> {
                     ),
                   ],
                 )
-
-
-
-
               )
           ),
-
           floatingActionButton: FloatingActionButton(
-            onPressed: _incrementCounter,
-            tooltip: 'Increment',
-            child: Icon(Icons.add),
-          ), // This trailing comma makes auto-formatting nicer for build methods.
+            onPressed: () {
+              this.setState(() {
+                isEditting = !isEditting;
+                print("issue hereee");
+                _json_data = jsonFromControllers();
+                print("issue boo");
+                _table_data = buildEditable(_json_data);
+              });
+            },
+            tooltip: 'Switch edit mode',
+            child: Icon(Icons.edit),
+          ),// This trailing comma makes auto-formatting nicer for build methods.
         ));
   }
 }

@@ -3,16 +3,10 @@ import 'dart:convert' as convert;
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_project/request.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_project/toggle_buttons_set.dart';
 import 'package:http/http.dart' as http;
-import 'package:rich_editor/rich_editor.dart';
-import 'package:markdown/markdown.dart' as md;
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 
 enum TextMode {
@@ -66,18 +60,33 @@ class _MyHomePageState extends State<MyHomePage> {
   var currentMode = TextMode.normal;
   var myController = TextEditingController();
   var summaryController = TextEditingController();
+  var percentController = TextEditingController();
+
+  var isEditting = false;
+
+  var _currentRangeValue = 80.0;
+  var toggleButtonSet =  ToggleButtonsSet();
+
+
   // quill.QuillController
   // QuillController _controller = QuillController.basic();
   // QuillController quillController = QuillController.basic();
   // var controller = markdown
   var _focusNode = FocusNode();
   final _textfieldFocusNode = FocusNode();
+
+  var isSelected = [false, false, false, false];
+  var sum_bool = [false];
+  var simp_bool = [false];
+  var stucture_bool = [false];
+  var include_bool = [false];
   // String? html = await keyEditor.currentState?.getHtml();
   // print(html);
 
   @override
   void initState() {
     super.initState();
+    percentController.text = "0.8";
   }
 
   getSelectedText(controller) {
@@ -93,8 +102,12 @@ class _MyHomePageState extends State<MyHomePage> {
       case 'Tabulate':
         Navigator.pushNamed(context, '/tables');
         break;
+      case 'Timelines':
+        Navigator.pushNamed(context, '/timelines');
+        break;
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
           PopupMenuButton<String>(
             onSelected: handleMenu,
             itemBuilder: (BuildContext context) {
-              return {'Summarization', 'Tabulate'}.map((String choice) {
+              return {'Summarization', 'Tabulate', 'Timelines'}.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
                   child: Text(choice),
@@ -126,327 +139,124 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child:Container(
-            child: // Insert widget into tree
-            RichEditor(
-              // key: keyEditor,
-              value: 'initial html here',
-              editorOptions: RichEditorOptions(
-                placeholder: 'Start typing',
-                // backgroundColor: Colors.blueGrey, // Editor's bg color
-                // baseTextColor: Colors.white,
-                // editor padding
-                padding: EdgeInsets.symmetric(horizontal: 5.0),
-                // font name
-                baseFontFamily: 'sans-serif',
-                // Position of the editing bar (BarPosition.TOP or BarPosition.BOTTOM)
-                barPosition: BarPosition.TOP,
-              ),
-              // You can return a Link (maybe you need to upload the image to your
-              // storage before displaying in the editor or you can also use base64
-              getImageUrl: (image) {
-                String link = 'https://avatars.githubusercontent.com/u/24323581?v=4';
-                String base64 = base64Encode(image.readAsBytesSync());
-                String base64String = 'data:image/png;base64, $base64';
-                return base64String;
-              },
-            )
-        ),
-          // Center is a layout widget. It takes a single child and positions it
-          // in the middle of the parent.
-    //       child: Column(
-    //             mainAxisSize: MainAxisSize.min,
-    //             children: [
-    //             Flexible(
-    //             child: ListView(
-    //             children: [
-    //                 Container(
-    //                     height: 35,
-    //                     decoration: BoxDecoration(
-    //                       color: Colors.blueAccent,
-    //                     ),
-    //                     child: Padding(
-    //                         padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-    //                         child: Text(
-    //                           "Enter text here",
-    //                           textAlign: TextAlign.center,
-    //                         ))),
-    //                 Container(
-    //                   height:350,
-    //                     margin: const EdgeInsets.only(
-    //                         left: 10.0, right: 10.0, top: 10, bottom: 10),
-    //                     color: Colors.white,
-    //                     child: TextFormField(
-    //                       controller: myController,
-    //                       // minLines: 10,
-    //                       keyboardType: TextInputType.multiline,
-    //                       maxLines: null,
-    //                       decoration: InputDecoration(
-    //                         border: OutlineInputBorder(
-    //                           borderSide:
-    //                               BorderSide(width: 3, color: Colors.blue),
-    //                           borderRadius: BorderRadius.circular(15),
-    //                         ),
-    //                         labelText: 'Text 1',
-    //                         contentPadding: EdgeInsets.all(15.0),
-    //                       ),
-    //                     )),
-    //                 Container(
-    //                     width: MediaQuery.of(context).size.width / 3,
-    //
-    //                     // margin: const EdgeInsets.only(left: 20.0, right: 20.0, top:  0, bottom: 20),
-    //                     child: isLoading
-    //                         ? Center(child: CircularProgressIndicator())
-    //                         : ElevatedButton(
-    //                             child: Text('Summarise'),
-    //                             onPressed: () async {
-    //                               setState(() {
-    //                                 isLoading=true;
-    //                               });
-    //                               var url = Uri.parse(
-    //                                   'http://127.0.0.1:5000/summarise/' +
-    //                                       myController.text
-    //                                           .replaceAll("\/", "%20or%20")
-    //                                           .replaceAll("\n", ""));
-    //                               var response = await getResponse(url);
-    //                               summaryController.text = response;
-    //                               setState(() {
-    //                                 isLoading = false;
-    //                               });
-    //                             },
-    //                           )),
-    //       //
-    //
-    //
-    //          Container(
-    //              child: Column(
-    //               crossAxisAlignment: CrossAxisAlignment.stretch,
-    //               children: [
-    //                 Container(
-    //                     height: 35,
-    //                     decoration: BoxDecoration(
-    //                       color: Colors.blueAccent,
-    //                     ),
-    //                     child: Padding(
-    //                         padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-    //                         child: Text(
-    //                           "Summary",
-    //                           textAlign: TextAlign.center,
-    //                         ))),
-    //                 Container(
-    //                   height:400,
-    //                   color: Colors.white10,
-    //                   child: Container(
-    //                       margin: const EdgeInsets.only(
-    //                           left: 10.0, right: 10.0, top: 10, bottom: 10),
-    //                       child: CupertinoTextField(
-    //                         controller: summaryController,
-    //                         style: TextStyle().merge(getStyle(currentMode)),
-    //                         keyboardType: TextInputType.multiline,
-    //                         maxLines: null,
-    //                         enableInteractiveSelection: true,
-    //                       )
-    //                       ),
-    //                 )])),
-    //
-    //        Container(
-    //          child: // Insert widget into tree
-    //          RichEditor(
-    //            // key: keyEditor,
-    //            value: 'initial html here',
-    //            editorOptions: RichEditorOptions(
-    //              placeholder: 'Start typing',
-    //              // backgroundColor: Colors.blueGrey, // Editor's bg color
-    //              // baseTextColor: Colors.white,
-    //              // editor padding
-    //              padding: EdgeInsets.symmetric(horizontal: 5.0),
-    //              // font name
-    //              baseFontFamily: 'sans-serif',
-    //              // Position of the editing bar (BarPosition.TOP or BarPosition.BOTTOM)
-    //              barPosition: BarPosition.TOP,
-    //            ),
-    //            // You can return a Link (maybe you need to upload the image to your
-    //            // storage before displaying in the editor or you can also use base64
-    //            getImageUrl: (image) {
-    //              String link = 'https://avatars.githubusercontent.com/u/24323581?v=4';
-    //              String base64 = base64Encode(image.readAsBytesSync());
-    //              String base64String = 'data:image/png;base64, $base64';
-    //              return base64String;
-    //            },
-    //          )
-    //        ),
-    //        Container(
-    //            child: Column(
-    //               crossAxisAlignment: CrossAxisAlignment.stretch,
-    //               children: [
-    //                 Container(
-    //                     height: 35,
-    //                     decoration: BoxDecoration(
-    //                       color: Colors.blueAccent,
-    //                     ),
-    //                     child: Padding(
-    //                         padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-    //                         child: Text(
-    //                           "Keywords",
-    //                           textAlign: TextAlign.center,
-    //                         ))),
-    //                 Container(
-    //                   // margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  15, bottom: 10),
-    //                   color: Colors.white,
-    //                   child: Container(
-    //                       margin: const EdgeInsets.only(
-    //                           left: 10.0, right: 10.0, top: 10, bottom: 10),
-    //                       child: Text("...")),
-    //                 ),
-    //               ])),
-    //       ])
-    //     )]
-    // )
+           child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                Flexible(
+                child: ListView(
+                children: [
+                    Container(
+                        margin: const EdgeInsets.only(
+                            left: 10, right: 20, top: 20, bottom: 10),
+                      child:
+                    Row(
+                      children: [
+                        toggleButtonSet,
+                        Container(
+                            child:
+                            Flexible (
+                              child:
+                            TextFormField(
+                              controller: myController,
+                              minLines: 13,
+                              keyboardType: TextInputType.multiline,
+                              maxLines: null,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderSide:
+                                  BorderSide(width: 3,
+                                    // color: Colors.blue
+                                  ),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                labelText: 'Enter text here',
+                                contentPadding: EdgeInsets.all(15.0),
+                              ),
+                            )))
+                      ]
+                    )),
+                  Container(
+                      decoration: BoxDecoration(
+
+                          borderRadius: BorderRadius.all(Radius.circular(10))
+                      ),
+
+                  ),
+                    Container(
+                        margin: const EdgeInsets.only(
+                            left: 20.0, right: 20.0, top: 10, bottom: 10),
+
+                        width: MediaQuery.of(context).size.width / 3,
+
+                        // margin: const EdgeInsets.only(left: 20.0, right: 20.0, top:  0, bottom: 20),
+                        child: isLoading
+                            ? Center(child: CircularProgressIndicator())
+                            : ElevatedButton(
+                                child: Text('Generate'),
+                                onPressed: () async {
+                                  setState(() {
+                                    isLoading=true;
+                                  });
+                                  print("Value of incldue frist half");
+                                  // print(includeFirstHalf);
+                                  var url = Uri.parse(
+                                      'http://127.0.0.1:5000/summarise/' +
+                                          myController.text
+                                              .replaceAll("\/", "%20or%20")
+                                              .replaceAll("\n", "") + '/' + toggleButtonSet.state.currentRangeValue.toString() + '/' + toggleButtonSet.state.sum_bool[0].toString() + '/' + toggleButtonSet.state.simp_bool[0].toString()+ '/' + toggleButtonSet.state.stucture_bool[0].toString() + '/' + toggleButtonSet.state.include_bool[0].toString());
+                                  var response = await getResponse(url);
+                                  summaryController.text = response.replaceAll("\-", "\u2022");
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                },
+                              )),
+             Container(
+                 margin: const EdgeInsets.only(
+                     left: 20.0, right: 20.0, top: 10, bottom: 10),
+                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                        height: 35,
+                        decoration: BoxDecoration(
+                          // color: Colors.blueAccent,
+                        ),
+                        child: Padding(
+                            padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                            child: Text(
+                              "Summary",
+                              textAlign: TextAlign.center,
+                            ))),
+                    Container(
+                      height:300,
+                      // color: Colors.white10,
+                      child: Container(
+                          margin: const EdgeInsets.only(
+                              left: 10.0, right: 10.0, top: 10, bottom: 10),
+                          child: isEditting? CupertinoTextField(
+                            controller: summaryController,
+                            style: TextStyle().merge(getStyle(currentMode)),
+                            keyboardType: TextInputType.multiline,
+                            maxLines: null,
+                            enableInteractiveSelection: true,
+                          ): Text(summaryController.text)
+                          ),
+                    )])),
+          ])
+        )]
     )
     )
-    );
+    ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              this.setState(() {
+                isEditting = !isEditting;
+              });
+            },
+            tooltip: 'Switch edit mode',
+            child: Icon(Icons.edit),
+          ),
+    ));
   }
-}
-
-// import 'package:flutter/widgets.dart';
-//
-// class Annotation extends Comparable<Annotation> {
-//   Annotation({@required this.range, this.style});
-//   final TextRange range;
-//   final TextStyle style;
-//
-//   @override
-//   int compareTo(Annotation other) {
-//     return range.start.compareTo(other.range.start);
-//   }
-//
-//   @override
-//   String toString() {
-//     return 'Annotation(range:$range, style:$style)';
-//   }
-// }
-// //
-
-// class AnnotatedEditableTextState extends EditableTextState {
-//   @override
-//   AnnotatedEditableText get widget => widget;
-//
-//   List<Annotation> getRanges() {
-//     var source = widget.annotations;
-//     source.sort();
-//     var result = new List<Annotation>.filled(length:source.length);
-//     Annotation prev = new Annotation(range: TextRange(start: 0, end:0));
-//     for (var item in source) {
-//       if (prev == null) {
-//         // First item, check if we need one before it.
-//         if (item.range.start > 0) {
-//           result.add(new Annotation(
-//             range: TextRange(start: 0, end: item.range.start),
-//
-// // class AnnotatedEditableText extends EditableText {
-// //   AnnotatedEditableText({
-// //     Key? key,
-// //     required FocusNode focusNode,
-// //     required TextEditingController controller,
-// //     required TextStyle style,
-// //     ValueChanged<String>? onChanged,
-// //     ValueChanged<String>? onSubmitted,
-// //     required Color cursorColor,
-// //     Color? selectionColor,
-// //     TextSelectionControls? selectionControls,
-// //     required this.annotations,
-// //   }) : super(
-// //     focusNode: focusNode,
-// //     controller: controller,
-// //     cursorColor: cursorColor,
-// //     style: style,
-// //     keyboardType: TextInputType.text,
-// //     autocorrect: true,
-// //     autofocus: true,
-// //     selectionColor: selectionColor,
-// //     selectionControls: selectionControls,
-// //     onChanged: onChanged,
-// //     onSubmitted: onSubmitted,
-// //     backgroundCursorColor: Colors.blue
-// //   );
-// //
-// //   final List<Annotation> annotations;
-// //
-// //   @override
-// //   AnnotatedEditableTextState createState() => new AnnotatedEditableTextState();
-// // }         ));
-//         }
-//         result.add(item);
-//         prev = item;
-//         continue;
-//       } else {
-//         // Consequent item, check if there is a gap between.
-//         if (prev.range.end > item.range.start) {
-//           // Invalid ranges
-//           throw new StateError(
-//               'Invalid (intersecting) ranges for annotated field');
-//         } else if (prev.range.end < item.range.start) {
-//           result.add(Annotation(
-//             range: TextRange(start: prev.range.end, end: item.range.start),
-//           ));
-//         }
-//         // Also add current annotation
-//         result.add(item);
-//         prev = item;
-//       }
-//     }
-//     // Also check for trailing range
-//     final String text = textEditingValue.text;
-//     if (result.last.range.end < text.length) {
-//       result.add(Annotation(
-//         range: TextRange(start: result.last.range.end, end: text.length),
-//       ));
-//     }
-//     return result;
-//   }
-//
-//   @override
-//   TextSpan buildTextSpan() {
-//     final String text = textEditingValue.text;
-//
-//     if (widget.annotations != null) {
-//       var items = getRanges();
-//       var children = <TextSpan>[];
-//       for (var item in items) {
-//         children.add(
-//           TextSpan(style: item.style, text: item.range.textInside(text)),
-//         );
-//       }
-//       return new TextSpan(style: widget.style, children: children);
-//     }
-//
-//     return new TextSpan(style: widget.style, text: text);
-//   }
-// }
-
-class Bullet extends Text {
-  const Bullet(
-    String data, {
-    Key? key,
-    TextStyle? style,
-    TextAlign? textAlign,
-    TextDirection? textDirection,
-    Locale? locale,
-    bool? softWrap,
-    TextOverflow? overflow,
-    double? textScaleFactor,
-    int? maxLines,
-    String? semanticsLabel,
-  }) : super(
-          '• $data',
-          key: key,
-          style: style,
-          textAlign: textAlign,
-          textDirection: textDirection,
-          locale: locale,
-          softWrap: softWrap,
-          overflow: overflow,
-          textScaleFactor: textScaleFactor,
-          maxLines: maxLines,
-          semanticsLabel: semanticsLabel,
-        );
 }

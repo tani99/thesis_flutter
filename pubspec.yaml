@@ -40,6 +40,7 @@ dependencies:
   file_picker: ^4.0.0
   path_provider: ^2.0.2
   tuple: ^2.0.0
+  timelines: ^0.1.0
 
 dev_dependencies:
   flutter_test:

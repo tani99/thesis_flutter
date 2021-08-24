@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_project/request.dart';
 import 'package:flutter_project/tablespage.dart';
+import 'package:flutter_project/timelinepage.dart';
 import 'package:http/http.dart' as http;
 
 import 'homepage.dart';
@@ -19,24 +20,31 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+        // Define the default brightness and colors.
+        brightness: Brightness.light,
+        primaryColor: Colors.lightBlue[800],
+
+        accentColor: Colors.cyan[600],
+
+        // Define the default font family.
+        fontFamily: 'Georgia',
+
+        // Define the default TextTheme. Use this to specify the default
+        // text styling for headlines, titles, bodies of text, and more.
+        textTheme: const TextTheme(
+          headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+          headline6: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),
+          bodyText2: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
+        ),
       ),
       // home: TablesPage(title: 'EduSum'),
-      initialRoute: '/',
+      initialRoute: '/tables',
       routes: {
         // When navigating to the "/" route, build the FirstScreen widget.
         '/': (context) => MyHomePage(title: "Summarisation"),
         // When navigating to the "/second" route, build the SecondScreen widget.
         '/tables': (context) => TablesPage(title: "Tabulate"),
+        '/timelines': (context) => TimelinePage(title: "Timelines"),
       },
     );
   }
