@@ -45,32 +45,6 @@ class _TablesPageState extends State<TablesPage> {
     super.initState();
   }
 
-  getTexts(obj) {
-    var result = [];
-    for(var i = 0; i< obj["Text1"].length; i++) {
-      result.add(Text(obj["Text1"][i]));
-      result.add(Text(obj["Text2"][i]));
-    }
-    return result;
-  }
-
-  List buildCols(){
-    List cols = [
-      {"title": 'Id', 'widthFactor': 0.05, 'key': 'id', 'editable': false},
-      {"title": 'Text 1', 'widthFactor': 0.45, 'key': 't1'},
-      {"title": 'Text 2', 'widthFactor': 0.45, 'key': 't2'},
-    ];
-    return cols;
-  }
-
-  List buildRows(json){
-    List rows = [for (final k in json.keys)
-      {"id": k.toString(),
-      "t1": json[k]["Text1"],
-      "t2": json[k]["Text2"]}];
-    return rows;
-  }
-
   Widget table(json) {
     tableControllers = [];
     return Container(
@@ -129,155 +103,111 @@ class _TablesPageState extends State<TablesPage> {
       cells: <DataCell>[
         DataCell(Container(
             // margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  20, bottom: 20),
-    width: 40,child:
+    width: 100,child:
         isEditting ?
-        CupertinoTextField(
+        TextFormField(
           controller: idController,
-          style: TextStyle(),
+          // minLines: 10,
           keyboardType: TextInputType.multiline,
           maxLines: null,
-          enableInteractiveSelection: true,
-        ) :Text(idController.text)
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderSide: BorderSide(
+                  width: 3, color: Colors.blue),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            // labelText: 'Text 1',
+            contentPadding: EdgeInsets.all(15.0),
+          ),
+        )
+        // TextFormField(
+        //   textInputAction: TextInputAction.newline,
+        //   controller: idController,
+        //   style: TextStyle(),
+        //   keyboardType: TextInputType.multiline,
+        //   maxLines: null,
+        //   enableInteractiveSelection: true,
+        // )
+            : Text(idController.text)
+
         )),
         DataCell(Container(
             // margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  20, bottom: 20),
     width: 450,child:
         isEditting ?
-        CupertinoTextField(
-          controller: text1Controller,
-          style: TextStyle(),
-          keyboardType: TextInputType.multiline,
-          maxLines: null,
-          enableInteractiveSelection: true,
-        ) :Text(text1Controller.text)
+    TextFormField(
+    controller: text1Controller,
+    // minLines: 10,
+    keyboardType: TextInputType.multiline,
+    maxLines: null,
+    decoration: InputDecoration(
+    border: OutlineInputBorder(
+    borderSide: BorderSide(
+    width: 3, color: Colors.blue),
+    borderRadius: BorderRadius.circular(15),
+    ),
+    // labelText: 'Text 1',
+    contentPadding: EdgeInsets.all(15.0),
+    ),
+    )
+        // TextFormField(
+        //   textInputAction: TextInputAction.newline,
+        //   controller: text1Controller,
+        //   style: TextStyle(),
+        //   keyboardType: TextInputType.multiline,
+        //   maxLines: null,
+        //   enableInteractiveSelection: true,
+        // )
+        :
+    Text(text1Controller.text)
         )),
-        DataCell(Container(
+        DataCell(
+            Container(
             // margin: const EdgeInsets.only(left: 0.0, right: 10.0, top:  0, bottom: 0),
     width: 450,child:
         isEditting ?
-        CupertinoTextField(
-          controller: text2Controller,
-          style: TextStyle(),
-          keyboardType: TextInputType.multiline,
-          maxLines: null,
-          enableInteractiveSelection: true,
-        ) :Text(text2Controller.text)
+    TextFormField(
+    controller: text2Controller,
+    // minLines: 10,
+    keyboardType: TextInputType.multiline,
+    maxLines: null,
+    decoration: InputDecoration(
+    border: OutlineInputBorder(
+    borderSide: BorderSide(
+    width: 3, color: Colors.blue),
+    borderRadius: BorderRadius.circular(15),
+    ),
+    // labelText: 'Text 1',
+    contentPadding: EdgeInsets.all(15.0),
+    ),
+    )
+        // TextFormField(
+        //   textInputAction: TextInputAction.newline,
+        //   controller: text2Controller,
+        //   style: TextStyle(),
+        //   keyboardType: TextInputType.multiline,
+        //   maxLines: null,
+        //   enableInteractiveSelection: true,
+        // )
+        :Text(text2Controller.text)
         )),
       ],
     );
   }
   Widget buildEditable(json){
-    // return Text(json["0"]["Text1"]);
     return table(json);
-    print("builds editable again");
-
-    List rows = buildRows(json);
-    List cols = buildCols();
-
-    print(rows);
-    // List rows = buildRows(json);
-    // List cols = buildCols();
-    return
-      Container(
-        margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  10, bottom: 10),
-      height:600,
-        child:Editable(
-      columns: cols,
-      rows: rows,
-      // zebraStripe: true,
-      // stripeColor1: Colors.white70,
-      // stripeColor2: Colors.grey,
-      // onRowSaved: (value) {
-      //   print(value);
-      // },
-      // onSubmitted: (value) {
-      //   print(value);
-      // },
-      // borderColor: Colors.blueGrey,
-      // tdStyle: TextStyle(fontWeight: FontWeight.bold),
-      // trHeight: 200,
-      // thStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-      // thAlignment: TextAlign.center,
-      // thVertAlignment: CrossAxisAlignment.end,
-      // thPaddingBottom: 3,
-      // showSaveIcon: true,
-      // saveIconColor: Colors.black,
-      // showCreateButton: true,
-      // tdAlignment: TextAlign.left,
-      // tdEditableMaxLines: 100, // don't limit and allow data to wrap
-      // tdPaddingTop: 20,
-      // tdPaddingBottom: 0,
-      // tdPaddingLeft: 10,
-      // tdPaddingRight: 8,
-      // focusedBorder: OutlineInputBorder(
-      //     borderSide: BorderSide(color: Colors.blue),
-      //     borderRadius: BorderRadius.all(Radius.circular(0))),
-    ));
   }
 
-  //
-  // Widget buildTable(json){
-  //   return Container(
-  //       margin: const EdgeInsets.only(left: 10.0, right: 10.0, top:  10, bottom: 10),
-  //       child:
-  //
-  //   Table(
-  //       border: TableBorder.all(),
-  //       columnWidths: {
-  //         0: FlexColumnWidth(1),// fixed to 100 width
-  //         1: FlexColumnWidth(15),
-  //         2: FlexColumnWidth(15),//fixed to 100 width
-  //       },
-  //       children: [
-  //         TableRow(
-  //           decoration: const BoxDecoration(
-  //             color: Colors.blue,
-  //           ),
-  //           // mainAxisAlignment: MainAxisAlignment.spaceAround,
-  //           children: [
-  //               Padding(
-  //               padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-  //                 child: Flexible(child:Text("Id",
-  //                           textAlign: TextAlign.left)),
-  //                         ),
-  //               Padding(
-  //               padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-  //               child: Flexible(child:Text("Text 1",
-  //                             textAlign: TextAlign.left))),
-  //               Padding(
-  //               padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-  //               child: Flexible(child:Text("Text 2",
-  //                             textAlign: TextAlign.left)))
-  //           ],
-  //         ),
-  //           for (final k in json.keys)
-  //             TableRow(
-  //               // mainAxisAlignment: MainAxisAlignment.spaceAround,
-  //               children: [
-  //                   Padding(
-  //                     padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-  //                     child: Flexible(child: Text(k.toString()))),
-  //                   Padding(
-  //                     padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-  //                     child: Flexible(child:Text(json[k]["Text1"]))),
-  //                   Padding(
-  //                     padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-  //                     child: Flexible(child:Text(json[k]["Text2"]))),
-  //               ]
-  //             ),
-  //               // )
-  //           ])
-  //   );
-  // }
-  //
   jsonFromControllers(){
     var json = {};
     var i = 0;
     for (var pair in tableControllers) {
       print("got a triplet");
-      json[i] = {"Id": pair[0].text, "Text1": pair[1].text, "Text2": pair[2].text};
+      json[pair[0].text] = {"Text1": pair[1].text, "Text2": pair[2].text};
       i += 1;
     }
+    print("json from controllers");
+    print(json);
     return json;
   }
 
@@ -292,15 +222,15 @@ class _TablesPageState extends State<TablesPage> {
   }
   @override
   Widget build(BuildContext context) {
-    final text1controller = TextEditingController();
-    final text2controller = TextEditingController();
+    final input1controller = TextEditingController();
+    final input2controller = TextEditingController();
     final numcontroller = TextEditingController();
 
-    setState(() {
-      text1controller.text = "The Lok Sabha is elected for a term of five years. Its life can be extended for one year at a time during a national emergency. It can be dissolved earlier than its term by the President on the advice of the Prime Minister. It can be voted out of power by a debate and vote on a no-confidence motion. During the 13\" Lok Sabha, Bhartiya Janata Party lost a no~confidence motion by one vote and had to resign.  The House may have not more than 552 members; 530 elected from the states, 20 from Union Territories and not more than 2 members nominated from the Anglo-Indian Community. At present, the strength of the Lok Sabha is 545.  Election to the Lok Sabha is by universal adult franchise. Every Indian citizen above the age; of 18 can vote for his/her representative in the Lok Sabha. The election is direct but by secret ballot, so that nobody is threatened or coerced into voting for a particular party or an individual. The Election Commission, an autonomous body elected by the President of India, organises, manages and oversees the entire process of election. What's More The provision for the Anglo-Indian community was included at the behest of the British Government to protect their nationals who had decided to stay back.";
-      text2controller.text = "Term The Rajya Sabha is a permanent House. It cannot be dissolved. When the Lok Sabha is not in session or is dissolved, the permanent house still functions. However, each member of the Rajya Sabha enjoys a six-year tcrm. Every two years one-third of its members retire by rotation. The total strength of the Rajya Sabha cannot be more than 250 of which 238 are elected while 12 arc nominated by the President of India. Election to the Rajya Sabha is done indirectly. The members of the state legislature elect the state representatives to the Rajya Sabha in accordance with the system of proportional representation by means of a single transferable vote. The seats in the Rajya Sabha for each state and Union Territory arc fixed on the basis of its population. A constituency is an area demarcated for the purpose of election. In other words, it is an area or locality with a certain number of people who choose a person to represent them in the Lok Sabha. Each State and Union Territory is divided into territorial constituencies. The division is not based on area but on population. Let us consider Mizoram, Rajasthan and Uttar Pradesh. Uttar Pradesh, a large state with dense population, has 80 constituencies.";
-      numcontroller.text = "3";
-    });
+    // setState(() {
+    //   input1controller.text = "The Lok Sabha is elected for a term of five years. Its life can be extended for one year at a time during a national emergency. It can be dissolved earlier than its term by the President on the advice of the Prime Minister. It can be voted out of power by a debate and vote on a no-confidence motion. During the 13\" Lok Sabha, Bhartiya Janata Party lost a no~confidence motion by one vote and had to resign.  The House may have not more than 552 members; 530 elected from the states, 20 from Union Territories and not more than 2 members nominated from the Anglo-Indian Community. At present, the strength of the Lok Sabha is 545.  Election to the Lok Sabha is by universal adult franchise. Every Indian citizen above the age; of 18 can vote for his/her representative in the Lok Sabha. The election is direct but by secret ballot, so that nobody is threatened or coerced into voting for a particular party or an individual. The Election Commission, an autonomous body elected by the President of India, organises, manages and oversees the entire process of election. What's More The provision for the Anglo-Indian community was included at the behest of the British Government to protect their nationals who had decided to stay back.";
+    //   input2controller.text = "Term The Rajya Sabha is a permanent House. It cannot be dissolved. When the Lok Sabha is not in session or is dissolved, the permanent house still functions. However, each member of the Rajya Sabha enjoys a six-year tcrm. Every two years one-third of its members retire by rotation. The total strength of the Rajya Sabha cannot be more than 250 of which 238 are elected while 12 arc nominated by the President of India. Election to the Rajya Sabha is done indirectly. The members of the state legislature elect the state representatives to the Rajya Sabha in accordance with the system of proportional representation by means of a single transferable vote. The seats in the Rajya Sabha for each state and Union Territory arc fixed on the basis of its population. A constituency is an area demarcated for the purpose of election. In other words, it is an area or locality with a certain number of people who choose a person to represent them in the Lok Sabha. Each State and Union Territory is divided into territorial constituencies. The division is not based on area but on population. Let us consider Mizoram, Rajasthan and Uttar Pradesh. Uttar Pradesh, a large state with dense population, has 80 constituencies.";
+    //   numcontroller.text = "3";
+    // });
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -352,7 +282,7 @@ class _TablesPageState extends State<TablesPage> {
                                       color: Colors.white,
                                       child:
                                       TextFormField(
-                                        controller: text1controller,
+                                        controller: input1controller,
                                         // minLines: 10,
                                         keyboardType: TextInputType.multiline,
                                         maxLines: null,
@@ -393,7 +323,7 @@ class _TablesPageState extends State<TablesPage> {
                                         // color: Colors.white,
                                         child:
                                         TextFormField(
-                                          controller: text2controller,
+                                          controller: input2controller,
                                           // minLines: 10,
                                           keyboardType: TextInputType.multiline,
                                           maxLines: null,
@@ -460,9 +390,9 @@ class _TablesPageState extends State<TablesPage> {
 
                                       var url = Uri.parse(
                                           'http://127.0.0.1:5000/tabulate/' +
-                                              text1controller.text
+                                              input1controller.text
                                                   .replaceAll("\/", "%20or%20")
-                                                  .replaceAll("\n", "").replaceAll("\'", "'") + '/' + text2controller.text
+                                                  .replaceAll("\n", "").replaceAll("\'", "'") + '/' + input2controller.text
                                               .replaceAll("\/", "%20or%20")
                                               .replaceAll("\n", "").replaceAll("\'", "'") + '/' + toggleButtonSet.state.currentRangeValue.toString() + '/' + toggleButtonSet.state.sum_bool[0].toString() + '/' + toggleButtonSet.state.simp_bool[0].toString()+ '/' + toggleButtonSet.state.stucture_bool[0].toString() + '/' + toggleButtonSet.state.include_bool[0].toString() + "/" + numcontroller.text);
                                       var jsonResponse = await getResponseJson(url);
