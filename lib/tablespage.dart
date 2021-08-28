@@ -45,6 +45,27 @@ class _TablesPageState extends State<TablesPage> {
     super.initState();
   }
 
+  Future<List> words_from_text(text) async {
+    var url = Uri.parse(
+        'http://127.0.0.1:5000/tokenize/' +
+            text
+                .replaceAll("\/", "%20or%20")
+                .replaceAll("\n", ""));
+    var responseJson = await getResponseJson(url);
+    return responseJson["words"];
+
+  }
+
+  Future<List<dynamic>> keywords_from_text(text) async {
+    var url_key = Uri.parse(
+        'http://127.0.0.1:5000/keywords/' +
+            text
+                .replaceAll("\/", "%20or%20")
+                .replaceAll("\n", ""));
+    var responseJson_keywords = await getResponseJson(url_key);
+    return responseJson_keywords["keywords"];
+  }
+
   Widget table(json) {
     tableControllers = [];
     return Container(
@@ -87,13 +108,21 @@ class _TablesPageState extends State<TablesPage> {
     var text1Controller = TextEditingController();
     var text2Controller = TextEditingController();
 
+    var text1_text = text1["text"];
+    var text1_words = text1["words"];
+    var text1_keywords = text1["keywords"];
+
+    var text2_text = text2["text"];
+    var text2_words = text2["words"];
+    var text2_keywords = text2["keywords"];
+
     print("test");
     print(id);
     print(text1);
     print(text2);
     idController.text = id.toString();
-    text1Controller.text = text1;
-    text2Controller.text = text2;
+    text1Controller.text = text1_text;
+    text2Controller.text = text2_text;
 
     setState(() {
       tableControllers.add([idController, text1Controller, text2Controller]);
@@ -120,14 +149,7 @@ class _TablesPageState extends State<TablesPage> {
             contentPadding: EdgeInsets.all(15.0),
           ),
         )
-        // TextFormField(
-        //   textInputAction: TextInputAction.newline,
-        //   controller: idController,
-        //   style: TextStyle(),
-        //   keyboardType: TextInputType.multiline,
-        //   maxLines: null,
-        //   enableInteractiveSelection: true,
-        // )
+
             : Text(idController.text)
 
         )),
@@ -150,16 +172,8 @@ class _TablesPageState extends State<TablesPage> {
     contentPadding: EdgeInsets.all(15.0),
     ),
     )
-        // TextFormField(
-        //   textInputAction: TextInputAction.newline,
-        //   controller: text1Controller,
-        //   style: TextStyle(),
-        //   keyboardType: TextInputType.multiline,
-        //   maxLines: null,
-        //   enableInteractiveSelection: true,
-        // )
-        :
-    Text(text1Controller.text)
+
+        : get_spans(text1_words, text1_keywords)
         )),
         DataCell(
             Container(
@@ -181,15 +195,8 @@ class _TablesPageState extends State<TablesPage> {
     contentPadding: EdgeInsets.all(15.0),
     ),
     )
-        // TextFormField(
-        //   textInputAction: TextInputAction.newline,
-        //   controller: text2Controller,
-        //   style: TextStyle(),
-        //   keyboardType: TextInputType.multiline,
-        //   maxLines: null,
-        //   enableInteractiveSelection: true,
-        // )
-        :Text(text2Controller.text)
+
+        :get_spans(text2_words, text2_keywords)
         )),
       ],
     );
@@ -198,12 +205,51 @@ class _TablesPageState extends State<TablesPage> {
     return table(json);
   }
 
-  jsonFromControllers(){
+  jsonFromControllers() async {
     var json = {};
     var i = 0;
     for (var pair in tableControllers) {
       print("got a triplet");
-      json[pair[0].text] = {"Text1": pair[1].text, "Text2": pair[2].text};
+      var url = Uri.parse(
+          'http://127.0.0.1:5000/tokenize/' +
+              pair[1].text
+                  .replaceAll("\/", "%20or%20")
+                  .replaceAll("\n", ""));
+      var responseJson = await getResponseJson(url);
+
+      var url_key = Uri.parse(
+          'http://127.0.0.1:5000/keywords/' +
+              pair[1].text
+                  .replaceAll("\/", "%20or%20")
+                  .replaceAll("\n", ""));
+      var responseJson_keywords = await getResponseJson(url_key);
+
+      json[i] = {};
+      json[i]["Text1"] = {};
+      json[i]["Text1"]["text"] = pair[1].text;
+      json[i]["Text1"]["words"] = responseJson["words"];
+      json[i]["Text1"]["keywords"] =responseJson_keywords["keywords"];
+
+
+      url = Uri.parse(
+          'http://127.0.0.1:5000/tokenize/' +
+              pair[2].text
+                  .replaceAll("\/", "%20or%20")
+                  .replaceAll("\n", ""));
+       responseJson = await getResponseJson(url);
+
+       url_key = Uri.parse(
+          'http://127.0.0.1:5000/keywords/' +
+              pair[2].text
+                  .replaceAll("\/", "%20or%20")
+                  .replaceAll("\n", ""));
+       responseJson_keywords = await getResponseJson(url_key);
+      json[i]["Text2"] = {};
+      json[i]["Text2"]["text"] = pair[2].text;
+      json[i]["Text2"]["words"] = responseJson["words"];
+      json[i]["Text2"]["keywords"] =responseJson_keywords["keywords"];
+
+      // json[pair[0].text] = {"Text1": pair[1].text, "Text2": pair[2].text};
       i += 1;
     }
     print("json from controllers");
@@ -220,6 +266,30 @@ class _TablesPageState extends State<TablesPage> {
     });
 
   }
+
+
+  Widget get_spans(words, keywords) {
+    print("enters");
+    print("WORDS ARE: " + words.toString());
+    print("KEYS ARE: " + keywords.toString());
+    // var words = words_from_text(text);
+    // var keywords = keywords_from_text(text);
+    return RichText(
+        text: new TextSpan(
+          // Note: Styles for TextSpans must be explicitly defined.
+          // Child text spans will inherit styles from parent
+            style: new TextStyle(
+              fontSize: 14.0,
+              color: Colors.black,
+            ),
+            children: <TextSpan> [for (final word in words)
+              (keywords.contains(word.toLowerCase())) ?
+              TextSpan(text: word + " ", style:TextStyle(fontWeight: FontWeight.bold)):
+              TextSpan(text: word + " "),
+            ]
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
     final input1controller = TextEditingController();
@@ -432,11 +502,12 @@ class _TablesPageState extends State<TablesPage> {
               )
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              this.setState(() {
+            onPressed: () async {
+              var json_from_controllers = await jsonFromControllers();
+              this.setState(()  {
                 isEditting = !isEditting;
                 print("issue hereee");
-                _json_data = jsonFromControllers();
+                _json_data = json_from_controllers;
                 print("issue boo");
                 _table_data = buildEditable(_json_data);
               });

@@ -65,23 +65,103 @@ class _TimelinePageState extends State<TimelinePage> {
     return rows;
   }
 
-  jsonFromControllers(){
+  jsonFromControllers() async {
     var json = {};
     var i = 0;
     for (var pair in timelineControllers) {
+
+      var url = Uri.parse(
+          'http://127.0.0.1:5000/tokenize/' +
+              pair[0].text
+                  .replaceAll("\/", "%20or%20")
+                  .replaceAll("\n", ""));
+      var responseJson = await getResponseJson(url);
+
+      var url_key = Uri.parse(
+          'http://127.0.0.1:5000/keywords/' +
+              pair[0].text
+                  .replaceAll("\/", "%20or%20")
+                  .replaceAll("\n", ""));
+      var responseJson_keywords = await getResponseJson(url_key);
+
+
+      json[i] = {};
       print("got a pair");
-      json[i] = {"Date": pair[0].text, "Event": pair[1].text};
+      json[i]["Date"] = {};
+      print("bla");
+      json[i]["Date"]["text"] = pair[0].text;
+      print("bleee");
+      json[i]["Date"]["words"] = responseJson["words"];
+      print("bluuu");
+      json[i]["Date"]["keywords"] =responseJson_keywords["keywords"];
+
+      url = Uri.parse(
+          'http://127.0.0.1:5000/tokenize/' +
+              pair[1].text
+                  .replaceAll("\/", "%20or%20")
+                  .replaceAll("\n", ""));
+      responseJson = await getResponseJson(url);
+
+      url_key = Uri.parse(
+          'http://127.0.0.1:5000/keywords/' +
+              pair[1].text
+                  .replaceAll("\/", "%20or%20")
+                  .replaceAll("\n", ""));
+      responseJson_keywords = await getResponseJson(url_key);
+
+      json[i]["Event"] = {};
+      json[i]["Event"]["text"] = pair[1].text;
+      json[i]["Event"]["words"] = responseJson["words"];
+      json[i]["Event"]["keywords"] = responseJson_keywords["keywords"];
+
+      // json[i] = {"Date": pair[0].text, "Event": pair[1].text};
       i += 1;
     }
+    print("json from controllers");
+    print(json);
     return json;
   }
 
+  Widget get_spans(words, keywords) {
+    print("enters");
+    print("WORDS ARE: " + words.toString());
+    print("KEYS ARE: " + keywords.toString());
+    // var words = words_from_text(text);
+    // var keywords = keywords_from_text(text);
+    return RichText(
+        text: new TextSpan(
+          // Note: Styles for TextSpans must be explicitly defined.
+          // Child text spans will inherit styles from parent
+            style: new TextStyle(
+              fontSize: 14.0,
+              color: Colors.black,
+            ),
+            children: <TextSpan> [for (final word in words)
+              (keywords.contains(word.toLowerCase())) ?
+              TextSpan(text: word + " ".replaceAll("\u2022", "\n\u2022"), style:TextStyle(fontWeight: FontWeight.bold)):
+              TextSpan(text: word + " "),
+            ]
+        ));
+  }
+
   Widget initialiseEventCards(date, event){
+
+    var date_text = date["text"];
+    var date_words = date["words"];
+    var date_keywords = date["keywords"];
+
+    var event_text = event["text"];
+    var event_words = event["words"];
+    var event_keywords = event["keywords"];
+
     print("controller added");
     var dateEdittingController = TextEditingController();
-    dateEdittingController.text = date;
+    dateEdittingController.text = date_text;
     var eventEdittingController = TextEditingController();
-    eventEdittingController.text = event;
+    eventEdittingController.text = event_text;
+
+
+
     setState(() {
       timelineControllers.add([dateEdittingController, eventEdittingController]);
     });
@@ -99,7 +179,9 @@ class _TimelinePageState extends State<TimelinePage> {
           keyboardType: TextInputType.multiline,
           maxLines: null,
           enableInteractiveSelection: true,
-        ) : Text(dateEdittingController.text)
+        ) :
+        get_spans(date_words, date_keywords)
+        // Text(dateEdittingController.text)
       ),
       contents: Card(
         child: Container(
@@ -110,7 +192,8 @@ class _TimelinePageState extends State<TimelinePage> {
     keyboardType: TextInputType.multiline,
     maxLines: null,
     enableInteractiveSelection: true,
-        ): Text(eventEdittingController.text),
+        ): get_spans(event_words, event_keywords)
+          // Text(eventEdittingController.text),
         )),
       node: TimelineNode(
         indicator: DotIndicator(),
@@ -290,10 +373,11 @@ class _TimelinePageState extends State<TimelinePage> {
               )
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () {
-            this.setState(() {
+            onPressed: () async{
+              var json_from_controllers = await jsonFromControllers();
+            this.setState(()  {
               isEditting[0] = !isEditting[0];
-              _json_data = jsonFromControllers();
+              _json_data = json_from_controllers;
               _table_data = initTable(_json_data);
             });
             },

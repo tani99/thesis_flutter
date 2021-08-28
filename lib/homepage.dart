@@ -68,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var toggleButtonSet =  ToggleButtonsSet();
 
 
+
   // quill.QuillController
   // QuillController _controller = QuillController.basic();
   // QuillController quillController = QuillController.basic();
@@ -80,6 +81,9 @@ class _MyHomePageState extends State<MyHomePage> {
   var simp_bool = [false];
   var stucture_bool = [false];
   var include_bool = [false];
+
+  var _keywords = [];
+var _summary_words = [];
   // String? html = await keyEditor.currentState?.getHtml();
   // print(html);
 
@@ -92,6 +96,23 @@ class _MyHomePageState extends State<MyHomePage> {
   getSelectedText(controller) {
     print(controller.text.substring(
         controller.selection.baseOffset, controller.selection.extentOffset));
+  }
+
+  Widget get_spans(){
+    return RichText(
+        text: new TextSpan(
+        // Note: Styles for TextSpans must be explicitly defined.
+        // Child text spans will inherit styles from parent
+        style: new TextStyle(
+        fontSize: 14.0,
+        color: Colors.black,
+    ),
+    children: <TextSpan> [for (final word in _summary_words)
+        (_keywords.contains(word.toLowerCase())) ?
+        TextSpan(text: word + " ", style:TextStyle(fontWeight: FontWeight.bold)):
+        TextSpan(text: word + " "),
+    ]
+    ));
   }
 
   void handleMenu(String value) {
@@ -204,10 +225,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                           myController.text
                                               .replaceAll("\/", "%20or%20")
                                               .replaceAll("\n", "") + '/' + toggleButtonSet.state.currentRangeValue.toString() + '/' + toggleButtonSet.state.sum_bool[0].toString() + '/' + toggleButtonSet.state.simp_bool[0].toString()+ '/' + toggleButtonSet.state.stucture_bool[0].toString() + '/' + toggleButtonSet.state.include_bool[0].toString());
-                                  var response = await getResponse(url);
-                                  summaryController.text = response.replaceAll("\-", "\u2022");
+                                  var responseJson = await getResponseJson(url);
+                                  var response = responseJson["summary"];
+
                                   setState(() {
                                     isLoading = false;
+                                    _keywords = responseJson["keywords"];
+                                    _summary_words = responseJson["summary"];
+                                    summaryController.text = _summary_words.join(" ").replaceAll("\-", "\u2022");
                                   });
                                 },
                               )),
@@ -240,7 +265,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             keyboardType: TextInputType.multiline,
                             maxLines: null,
                             enableInteractiveSelection: true,
-                          ): Text(summaryController.text)
+                          ): get_spans()
+                          // Text(summaryController.text)
                           ),
                     )])),
           ])
@@ -249,9 +275,25 @@ class _MyHomePageState extends State<MyHomePage> {
     )
     ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () {
+            onPressed: () async {
+                var url = Uri.parse(
+                'http://127.0.0.1:5000/tokenize/' +
+                    summaryController.text
+                    .replaceAll("\/", "%20or%20")
+                    .replaceAll("\n", ""));
+                var responseJson = await getResponseJson(url);
+
+                var url_key = Uri.parse(
+                    'http://127.0.0.1:5000/keywords/' +
+                        summaryController.text
+                            .replaceAll("\/", "%20or%20")
+                            .replaceAll("\n", ""));
+                var responseJson_keywords = await getResponseJson(url_key);
+
               this.setState(() {
                 isEditting = !isEditting;
+                _summary_words = responseJson["words"];
+                _keywords = responseJson_keywords["keywords"];
               });
             },
             tooltip: 'Switch edit mode',
@@ -259,4 +301,5 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
     ));
   }
+
 }
