@@ -226,7 +226,7 @@ class _TablesPageState extends State<TablesPage> {
 
       json[i] = {};
       json[i]["Text1"] = {};
-      json[i]["Text1"]["text"] = pair[1].text;
+      json[i]["Text1"]["text"] = pair[1].text.replaceAll("\u2022", "\n\u2022");
       json[i]["Text1"]["words"] = responseJson["words"];
       json[i]["Text1"]["keywords"] =responseJson_keywords["keywords"];
 
@@ -245,7 +245,7 @@ class _TablesPageState extends State<TablesPage> {
                   .replaceAll("\n", ""));
        responseJson_keywords = await getResponseJson(url_key);
       json[i]["Text2"] = {};
-      json[i]["Text2"]["text"] = pair[2].text;
+      json[i]["Text2"]["text"] = pair[2].text.replaceAll("\u2022", "\n\u2022");;
       json[i]["Text2"]["words"] = responseJson["words"];
       json[i]["Text2"]["keywords"] =responseJson_keywords["keywords"];
 
@@ -325,6 +325,7 @@ class _TablesPageState extends State<TablesPage> {
                       child: ListView(
                         children: [
                           Container(
+                              margin: const EdgeInsets.only(left: 20.0, right: 20.0, top:  20, bottom: 10),
                             child:
                           Row(
                           children: [
